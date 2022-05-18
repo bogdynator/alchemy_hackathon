@@ -119,12 +119,6 @@ const config: HardhatUserConfig = {
     outDir: "typechain",
     target: "ethers-v5",
   },
-  contractSizer: {
-    alphaSort: true,
-    disambiguatePaths: false,
-    runOnCompile: false, // make this true if you want to run contract sizer at compile
-    strict: true,
-  },
 };
 
 export default config;
