@@ -1,3 +1,4 @@
+import { messagePrefix } from "@ethersproject/hash";
 import { expect } from "chai";
 import { Console } from "console";
 import { BigNumber } from "ethers";
@@ -27,6 +28,7 @@ describe("Test Voting System", async () => {
   beforeEach(async () => {
     Token = await TokenFactory.deploy("Alchemy Token", "ATK");
     Voting = await VotingFactory.deploy(Token.address);
+    await Token.transferOwnership(Voting.address);
   });
 
   it("It was deployed correctly", async () => {
@@ -34,7 +36,7 @@ describe("Test Voting System", async () => {
     expect(await Token.symbol()).to.be.equals("ATK");
   });
 
-  it("It can add a hackathon", async () => {
+  xit("It can add a hackathon", async () => {
     let name = "First Hackathon";
     let description = "Voting System with ERC20";
     let endDate = ethers.provider.send("evm_increaseTime", [7 * 60 * 60 * 24]); //7 days
@@ -48,7 +50,7 @@ describe("Test Voting System", async () => {
     await Voting.printHackathon(0);
   });
 
-  it("It can add 2 hackathons", async () => {
+  xit("It can add 2 hackathons", async () => {
     let name1 = "First Hackathon";
     let description1 = "Voting System with ERC20";
     let endDate1 = ethers.provider.send("evm_increaseTime", [7 * 60 * 60 * 24]); //7 days
@@ -73,7 +75,7 @@ describe("Test Voting System", async () => {
     await Voting.printHackathon(1);
   });
 
-  it("It can add a project", async () => {
+  xit("It can add a project", async () => {
     let name = "First Hackathon";
     let description = "Voting System with ERC20";
     let endDate = ethers.provider.send("evm_increaseTime", [7 * 60 * 60 * 24]); //7 days
@@ -91,16 +93,15 @@ describe("Test Voting System", async () => {
     let contractAddress = "address";
     let frontEndURL = "https://frontend.com";
     let projectOwner = bob.address;
-    let teamId = 1;
 
-    expect(await Voting.addProject(nameP, descriptionP, contractAddress, frontEndURL, projectOwner, teamId))
+    expect(await Voting.addProject(nameP, descriptionP, contractAddress, frontEndURL, projectOwner))
       .to.emit(Voting, "ProjectAdded")
-      .withArgs(nameP, descriptionP, contractAddress, frontEndURL, projectOwner, teamId);
+      .withArgs(nameP, descriptionP, contractAddress, frontEndURL, projectOwner);
 
     await Voting.printProject(0, 0);
   });
 
-  it("It can add 3 projects.", async () => {
+  xit("It can add 3 projects.", async () => {
     let name = "First Hackathon";
     let description = "Voting System with ERC20";
     let endDate = ethers.provider.send("evm_increaseTime", [7 * 60 * 60 * 24]); //7 days
@@ -118,11 +119,10 @@ describe("Test Voting System", async () => {
     let contractAddress1 = "address";
     let frontEndURL1 = "https://frontend.com";
     let projectOwner1 = bob.address;
-    let teamId1 = 1;
 
-    expect(await Voting.addProject(nameP1, descriptionP1, contractAddress1, frontEndURL1, projectOwner1, teamId1))
+    expect(await Voting.addProject(nameP1, descriptionP1, contractAddress1, frontEndURL1, projectOwner1))
       .to.emit(Voting, "ProjectAdded")
-      .withArgs(nameP1, descriptionP1, contractAddress1, frontEndURL1, projectOwner1, teamId1);
+      .withArgs(nameP1, descriptionP1, contractAddress1, frontEndURL1, projectOwner1);
 
     await Voting.printProject(0, 0);
 
@@ -131,11 +131,10 @@ describe("Test Voting System", async () => {
     let contractAddress2 = "address food";
     let frontEndURL2 = "https://frontendFood.com";
     let projectOwner2 = andy.address;
-    let teamId2 = 2;
 
-    expect(await Voting.addProject(nameP2, descriptionP2, contractAddress2, frontEndURL2, projectOwner2, teamId2))
+    expect(await Voting.addProject(nameP2, descriptionP2, contractAddress2, frontEndURL2, projectOwner2))
       .to.emit(Voting, "ProjectAdded")
-      .withArgs(nameP2, descriptionP2, contractAddress2, frontEndURL2, projectOwner2, teamId2);
+      .withArgs(nameP2, descriptionP2, contractAddress2, frontEndURL2, projectOwner2);
 
     await Voting.printProject(0, 1);
 
@@ -144,12 +143,36 @@ describe("Test Voting System", async () => {
     let contractAddress3 = "addressBestTeam";
     let frontEndURL3 = "https://frontendBestTeam.com";
     let projectOwner3 = alice.address;
-    let teamId3 = 3;
 
-    expect(await Voting.addProject(nameP3, descriptionP3, contractAddress3, frontEndURL3, projectOwner3, teamId3))
+    expect(await Voting.addProject(nameP3, descriptionP3, contractAddress3, frontEndURL3, projectOwner3))
       .to.emit(Voting, "ProjectAdded")
-      .withArgs(nameP3, descriptionP3, contractAddress3, frontEndURL3, projectOwner3, teamId3);
+      .withArgs(nameP3, descriptionP3, contractAddress3, frontEndURL3, projectOwner3);
 
     await Voting.printProject(0, 2);
+  });
+
+  it("Governor can set the right vote for users.", async () => {
+    expect(await Voting.connect(user).getRightForVote(andy.address, ethers.utils.parseEther("1")))
+      .to.emit(Voting, "RightToVoteGiven")
+      .withArgs(andy.address, ethers.utils.parseEther("1"));
+
+    expect(await Voting.getBalance(andy.address)).to.be.equals(ethers.utils.parseEther("1"));
+  });
+
+  it("It can delegate an user to vote.", async () => {
+    await Voting.connect(user).getRightForVote(andy.address, ethers.utils.parseEther("1"));
+
+    console.log(await Voting.getBalance(andy.address));
+    console.log(await Voting.getBalance(bob.address));
+
+    expect(await Voting.connect(andy).delegatePerson(bob.address, ethers.utils.parseEther("1")))
+      .to.emit(Voting, "DelegatePerson")
+      .withArgs(bob.address, ethers.utils.parseEther("1"));
+
+    console.log(await Voting.getBalance(andy.address));
+    console.log(await Voting.getBalance(bob.address));
+
+    expect(await Voting.getBalance(andy.address)).to.be.equals(ethers.utils.parseEther("0"));
+    expect(await Voting.getBalance(bob.address)).to.be.equals(ethers.utils.parseEther("1"));
   });
 });
