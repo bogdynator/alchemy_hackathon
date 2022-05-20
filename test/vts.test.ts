@@ -43,13 +43,16 @@ describe("Test Voting System", async () => {
     let org = await Voting.organizations(1);
 
     Token = (await ethers.getContractAt("TokenVote", org.token)) as TokenVote;
-    await Token.mint(bob.address, 100);
-    console.log(await Token.balanceOf(bob.address));
     console.log(await Token.name());
     await Voting.addHackathon(1, "hack", "desc", 1653033263, 1659646800, 1000, 1653033263, 1659646800);
-    await Voting.addProject(1, ["0xc20276346b47E9D7d7d558F0387D147f26923Da6"], "Proj1", "https://currentmillis.com/");
-    await Voting.addVoter("0xc20276346b47E9D7d7d558F0387D147f26923Da6", 1, 1000);
-    await Voting.vote(1, 1, 1);
+    await Voting.addProject(1, [user.address], "Proj1", "https://currentmillis.com/");
+    await expect(Voting.addVoter(user.address, 1, 1000))
+      .to.emit(Token, "Transfer")
+      .withArgs(ethers.constants.AddressZero, user.address, 1000);
+    expect(await Token.balanceOf(user.address)).to.be.equal(1000);
+    await Token.delegate(user.address);
+    expect(await Token.getVotes(user.address)).to.be.equal(1000);
+    await Voting.connect(user).vote(1, 1, 1);
     expect(await Voting.voted("1", user.address)).to.be.equal(1);
   });
 });
