@@ -55,7 +55,7 @@ contract VTS is AccessControl {
         string calldata _tokenName,
         string calldata _tokenSymbol,
         address[] calldata admins
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) returns (address) {
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         require(admins.length <= 5, "To many admins");
         organizationIdCounter.increment();
         uint256 currentTokenId = organizationIdCounter.current();
@@ -63,8 +63,6 @@ contract VTS is AccessControl {
         TokenVote token = new TokenVote(_tokenName, _tokenSymbol);
 
         organizations[currentTokenId] = Organization(_name, _description, admins, hackatons, token);
-
-        return address(token);
     }
 
     modifier adminRequired(uint256 _organizationId) {
@@ -138,10 +136,10 @@ contract VTS is AccessControl {
         require(nrOfVotes == nrOfTokens, "Sender is not the owner of tokens");
         require(nrOfVotes > 0, "Not enought votes available");
         // ca nu a votat
-        require(voted[_projectId][msg.sender] == 0, "Already voted");
+        require(voted[_hackathonId][msg.sender] == 0, "Already voted");
         projects[_hackathonId][_projectId].votes += nrOfVotes;
         // block the votes
-        voted[_projectId][msg.sender] = 1;
+        voted[_hackathonId][msg.sender] = _projectId;
     }
 
     function voteByDelegate(

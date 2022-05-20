@@ -2,4 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { Token } from "./Token";
+export type { TokenVote } from "./TokenVote";
+export type { VTS } from "./VTS";
 export type { VotingSystem } from "./VotingSystem";
