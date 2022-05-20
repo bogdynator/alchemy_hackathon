@@ -3,9 +3,8 @@ pragma solidity ^0.8.14;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "hardhat/console.sol";
 
-import "./TokenVote.sol";
+import "./Structs.sol";
 
 contract VTS is AccessControl {
     using Counters for Counters.Counter;
@@ -14,31 +13,6 @@ contract VTS is AccessControl {
     Counters.Counter public hackathonsIdCounter;
     Counters.Counter public projectsIdCounter;
 
-    struct Organization {
-        string name;
-        string description;
-        address[] admins;
-        uint256[] hackathons;
-        TokenVote token;
-    }
-
-    struct Hackathon {
-        string name;
-        string description;
-        uint256 startDate;
-        uint256 endDate;
-        uint256 reward;
-        uint256 voteStart;
-        uint256 voteEnd;
-    }
-
-    struct Project {
-        string name;
-        string url;
-        address[] contributors;
-        uint256 votes;
-    }
-
     mapping(uint256 => Organization) public organizations;
     mapping(uint256 => mapping(address => uint256)) public voted;
     mapping(uint256 => mapping(address => uint256)) public voters;
@@ -46,9 +20,14 @@ contract VTS is AccessControl {
     mapping(uint256 => mapping(uint256 => Project)) public projects;
     mapping(address => uint256) public rewards;
 
-    constructor() {
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-    }
+    event AddOrganization();
+    event AddHackathon();
+    event AddProject();
+    event AddVoter(uint256 organizatonId, address voter, uint256 amount);
+    event AddAdminOrganization();
+    event Vote();
+
+    constructor() {}
 
     function addOrganization(
         string calldata _name,
@@ -56,13 +35,14 @@ contract VTS is AccessControl {
         string calldata _tokenName,
         string calldata _tokenSymbol,
         address[] calldata admins
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    ) external {
         require(admins.length <= 5, "To many admins");
         organizationIdCounter.increment();
         uint256 currentTokenId = organizationIdCounter.current();
         uint256[] memory hackatons;
         TokenVote token = new TokenVote(_tokenName, _tokenSymbol);
 
+        emit AddOrganization();
         organizations[currentTokenId] = Organization(_name, _description, admins, hackatons, token);
     }
 
@@ -86,6 +66,7 @@ contract VTS is AccessControl {
         require(voters[_organizationId][_voter] == 0, "Voter has been added in the past");
         voters[_organizationId][_voter] = 1;
         organizations[_organizationId].token.mint(_voter, _amount);
+        emit AddVoter(_organizationId, _voter, _amount);
     }
 
     function addHackathon(
@@ -112,6 +93,7 @@ contract VTS is AccessControl {
             _voteEndDate
         );
         organizations[_organizationId].hackathons.push(currentTokenId);
+        emit AddHackathon();
     }
 
     function addProject(
@@ -124,6 +106,7 @@ contract VTS is AccessControl {
         uint256 currentTokenId = projectsIdCounter.current();
 
         projects[_hackathonId][currentTokenId] = Project(_name, _url, contributors, 0);
+        emit AddProject();
     }
 
     function vote(
@@ -131,19 +114,17 @@ contract VTS is AccessControl {
         uint256 _hackathonId,
         uint256 _projectId
     ) external {
-        console.log(block.timestamp);
-        console.log(hackathons[_hackathonId].voteEnd);
-        console.log(hackathons[_hackathonId].reward);
         require(hackathons[_hackathonId].voteEnd > block.timestamp, "Voting is complete");
         uint256 nrOfVotes = organizations[_organizationId].token.getVotes(msg.sender);
         uint256 nrOfTokens = organizations[_organizationId].token.balanceOf(msg.sender);
+
         require(nrOfVotes == nrOfTokens, "Sender is not the owner of tokens");
         require(nrOfVotes > 0, "Not enought votes available");
-        // ca nu a votat
         require(voted[_hackathonId][msg.sender] == 0, "Already voted");
+
         projects[_hackathonId][_projectId].votes += nrOfVotes;
-        // block the votes
         voted[_hackathonId][msg.sender] = _projectId;
+        emit Vote();
     }
 
     function voteByDelegate(
@@ -157,11 +138,11 @@ contract VTS is AccessControl {
         uint256 nrOfVotes = organizations[_organizationId].token.getVotes(msg.sender);
         require(token.delegates(_ownerOfTokens) == msg.sender, "msg.sender is not a delegatee of owner");
         require(nrOfVotes > 0, "Not enought votes available");
-        // ca nu a votat
-        require(voted[_projectId][_ownerOfTokens] == 0, "Already voted");
+
+        require(voted[_hackathonId][msg.sender] == 0, "Already voted");
         projects[_hackathonId][_projectId].votes += nrOfVotes;
-        // block the votes
-        voted[_projectId][_ownerOfTokens] = 1;
+
+        voted[_hackathonId][msg.sender] = _projectId;
     }
 
     function executeReward(uint256 _hackathonId, address[] calldata winners) external adminRequired(_hackathonId) {

@@ -129,15 +129,56 @@ export interface VTSInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "voters", data: BytesLike): Result;
 
   events: {
+    "AddAdminOrganization()": EventFragment;
+    "AddHackathon()": EventFragment;
+    "AddOrganization()": EventFragment;
+    "AddProject()": EventFragment;
+    "AddVoter(uint256,address,uint256)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
     "RoleRevoked(bytes32,address,address)": EventFragment;
+    "Vote()": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "AddAdminOrganization"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "AddHackathon"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "AddOrganization"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "AddProject"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "AddVoter"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Vote"): EventFragment;
 }
+
+export interface AddAdminOrganizationEventObject {}
+export type AddAdminOrganizationEvent = TypedEvent<[], AddAdminOrganizationEventObject>;
+
+export type AddAdminOrganizationEventFilter = TypedEventFilter<AddAdminOrganizationEvent>;
+
+export interface AddHackathonEventObject {}
+export type AddHackathonEvent = TypedEvent<[], AddHackathonEventObject>;
+
+export type AddHackathonEventFilter = TypedEventFilter<AddHackathonEvent>;
+
+export interface AddOrganizationEventObject {}
+export type AddOrganizationEvent = TypedEvent<[], AddOrganizationEventObject>;
+
+export type AddOrganizationEventFilter = TypedEventFilter<AddOrganizationEvent>;
+
+export interface AddProjectEventObject {}
+export type AddProjectEvent = TypedEvent<[], AddProjectEventObject>;
+
+export type AddProjectEventFilter = TypedEventFilter<AddProjectEvent>;
+
+export interface AddVoterEventObject {
+  organizatonId: BigNumber;
+  voter: string;
+  amount: BigNumber;
+}
+export type AddVoterEvent = TypedEvent<[BigNumber, string, BigNumber], AddVoterEventObject>;
+
+export type AddVoterEventFilter = TypedEventFilter<AddVoterEvent>;
 
 export interface RoleAdminChangedEventObject {
   role: string;
@@ -165,6 +206,11 @@ export interface RoleRevokedEventObject {
 export type RoleRevokedEvent = TypedEvent<[string, string, string], RoleRevokedEventObject>;
 
 export type RoleRevokedEventFilter = TypedEventFilter<RoleRevokedEvent>;
+
+export interface VoteEventObject {}
+export type VoteEvent = TypedEvent<[], VoteEventObject>;
+
+export type VoteEventFilter = TypedEventFilter<VoteEvent>;
 
 export interface VTS extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -576,6 +622,21 @@ export interface VTS extends BaseContract {
   };
 
   filters: {
+    "AddAdminOrganization()"(): AddAdminOrganizationEventFilter;
+    AddAdminOrganization(): AddAdminOrganizationEventFilter;
+
+    "AddHackathon()"(): AddHackathonEventFilter;
+    AddHackathon(): AddHackathonEventFilter;
+
+    "AddOrganization()"(): AddOrganizationEventFilter;
+    AddOrganization(): AddOrganizationEventFilter;
+
+    "AddProject()"(): AddProjectEventFilter;
+    AddProject(): AddProjectEventFilter;
+
+    "AddVoter(uint256,address,uint256)"(organizatonId?: null, voter?: null, amount?: null): AddVoterEventFilter;
+    AddVoter(organizatonId?: null, voter?: null, amount?: null): AddVoterEventFilter;
+
     "RoleAdminChanged(bytes32,bytes32,bytes32)"(
       role?: BytesLike | null,
       previousAdminRole?: BytesLike | null,
@@ -600,6 +661,9 @@ export interface VTS extends BaseContract {
       sender?: string | null,
     ): RoleRevokedEventFilter;
     RoleRevoked(role?: BytesLike | null, account?: string | null, sender?: string | null): RoleRevokedEventFilter;
+
+    "Vote()"(): VoteEventFilter;
+    Vote(): VoteEventFilter;
   };
 
   estimateGas: {
