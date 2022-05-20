@@ -27,6 +27,7 @@ export interface VTSInterface extends utils.Interface {
     "addOrganization(string,string,string,string,address[])": FunctionFragment;
     "addProject(uint256,address[],string,string)": FunctionFragment;
     "addVoter(address,uint256,uint256)": FunctionFragment;
+    "calculateWinners(uint256)": FunctionFragment;
     "executeReward(uint256,address[])": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
@@ -54,6 +55,7 @@ export interface VTSInterface extends utils.Interface {
       | "addOrganization"
       | "addProject"
       | "addVoter"
+      | "calculateWinners"
       | "executeReward"
       | "getRoleAdmin"
       | "grantRole"
@@ -82,6 +84,7 @@ export interface VTSInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "addOrganization", values: [string, string, string, string, string[]]): string;
   encodeFunctionData(functionFragment: "addProject", values: [BigNumberish, string[], string, string]): string;
   encodeFunctionData(functionFragment: "addVoter", values: [string, BigNumberish, BigNumberish]): string;
+  encodeFunctionData(functionFragment: "calculateWinners", values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: "executeReward", values: [BigNumberish, string[]]): string;
   encodeFunctionData(functionFragment: "getRoleAdmin", values: [BytesLike]): string;
   encodeFunctionData(functionFragment: "grantRole", values: [BytesLike, string]): string;
@@ -109,6 +112,7 @@ export interface VTSInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "addOrganization", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "addProject", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "addVoter", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "calculateWinners", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "executeReward", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getRoleAdmin", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
@@ -129,15 +133,63 @@ export interface VTSInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "voters", data: BytesLike): Result;
 
   events: {
+    "HackathonAdded(uint256,string,string,uint256,uint256,uint256,uint256,uint256)": EventFragment;
+    "OrganizationAdded(string,string,string,string)": EventFragment;
+    "ProjectAdded(uint256,string,string)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
     "RoleRevoked(bytes32,address,address)": EventFragment;
+    "Voted(uint256,uint256,uint256)": EventFragment;
+    "VotedByDelegate(uint256,uint256,uint256,address)": EventFragment;
+    "VoterAdded(address,uint256,uint256)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "HackathonAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OrganizationAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProjectAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Voted"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "VotedByDelegate"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "VoterAdded"): EventFragment;
 }
+
+export interface HackathonAddedEventObject {
+  _organizationId: BigNumber;
+  _name: string;
+  _description: string;
+  _startDate: BigNumber;
+  _endDate: BigNumber;
+  _reward: BigNumber;
+  _voteStartDate: BigNumber;
+  _voteEndDate: BigNumber;
+}
+export type HackathonAddedEvent = TypedEvent<
+  [BigNumber, string, string, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber],
+  HackathonAddedEventObject
+>;
+
+export type HackathonAddedEventFilter = TypedEventFilter<HackathonAddedEvent>;
+
+export interface OrganizationAddedEventObject {
+  name: string;
+  description: string;
+  tokenName: string;
+  tokenSymbol: string;
+}
+export type OrganizationAddedEvent = TypedEvent<[string, string, string, string], OrganizationAddedEventObject>;
+
+export type OrganizationAddedEventFilter = TypedEventFilter<OrganizationAddedEvent>;
+
+export interface ProjectAddedEventObject {
+  _hackathonId: BigNumber;
+  _name: string;
+  _url: string;
+}
+export type ProjectAddedEvent = TypedEvent<[BigNumber, string, string], ProjectAddedEventObject>;
+
+export type ProjectAddedEventFilter = TypedEventFilter<ProjectAddedEvent>;
 
 export interface RoleAdminChangedEventObject {
   role: string;
@@ -165,6 +217,34 @@ export interface RoleRevokedEventObject {
 export type RoleRevokedEvent = TypedEvent<[string, string, string], RoleRevokedEventObject>;
 
 export type RoleRevokedEventFilter = TypedEventFilter<RoleRevokedEvent>;
+
+export interface VotedEventObject {
+  _organizationId: BigNumber;
+  _hackathonId: BigNumber;
+  _projectId: BigNumber;
+}
+export type VotedEvent = TypedEvent<[BigNumber, BigNumber, BigNumber], VotedEventObject>;
+
+export type VotedEventFilter = TypedEventFilter<VotedEvent>;
+
+export interface VotedByDelegateEventObject {
+  _organizationId: BigNumber;
+  _hackathonId: BigNumber;
+  _projectId: BigNumber;
+  _ownerOfTokens: string;
+}
+export type VotedByDelegateEvent = TypedEvent<[BigNumber, BigNumber, BigNumber, string], VotedByDelegateEventObject>;
+
+export type VotedByDelegateEventFilter = TypedEventFilter<VotedByDelegateEvent>;
+
+export interface VoterAddedEventObject {
+  _voter: string;
+  _organizationId: BigNumber;
+  _amount: BigNumber;
+}
+export type VoterAddedEvent = TypedEvent<[string, BigNumber, BigNumber], VoterAddedEventObject>;
+
+export type VoterAddedEventFilter = TypedEventFilter<VoterAddedEvent>;
 
 export interface VTS extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -226,6 +306,8 @@ export interface VTS extends BaseContract {
       _amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> },
     ): Promise<ContractTransaction>;
+
+    calculateWinners(_hackathonId: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber[]]>;
 
     executeReward(
       _hackathonId: BigNumberish,
@@ -361,6 +443,8 @@ export interface VTS extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> },
   ): Promise<ContractTransaction>;
 
+  calculateWinners(_hackathonId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber[]>;
+
   executeReward(
     _hackathonId: BigNumberish,
     winners: string[],
@@ -495,6 +579,8 @@ export interface VTS extends BaseContract {
       overrides?: CallOverrides,
     ): Promise<void>;
 
+    calculateWinners(_hackathonId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber[]>;
+
     executeReward(_hackathonId: BigNumberish, winners: string[], overrides?: CallOverrides): Promise<void>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
@@ -576,6 +662,43 @@ export interface VTS extends BaseContract {
   };
 
   filters: {
+    "HackathonAdded(uint256,string,string,uint256,uint256,uint256,uint256,uint256)"(
+      _organizationId?: null,
+      _name?: null,
+      _description?: null,
+      _startDate?: null,
+      _endDate?: null,
+      _reward?: null,
+      _voteStartDate?: null,
+      _voteEndDate?: null,
+    ): HackathonAddedEventFilter;
+    HackathonAdded(
+      _organizationId?: null,
+      _name?: null,
+      _description?: null,
+      _startDate?: null,
+      _endDate?: null,
+      _reward?: null,
+      _voteStartDate?: null,
+      _voteEndDate?: null,
+    ): HackathonAddedEventFilter;
+
+    "OrganizationAdded(string,string,string,string)"(
+      name?: null,
+      description?: null,
+      tokenName?: null,
+      tokenSymbol?: null,
+    ): OrganizationAddedEventFilter;
+    OrganizationAdded(
+      name?: null,
+      description?: null,
+      tokenName?: null,
+      tokenSymbol?: null,
+    ): OrganizationAddedEventFilter;
+
+    "ProjectAdded(uint256,string,string)"(_hackathonId?: null, _name?: null, _url?: null): ProjectAddedEventFilter;
+    ProjectAdded(_hackathonId?: null, _name?: null, _url?: null): ProjectAddedEventFilter;
+
     "RoleAdminChanged(bytes32,bytes32,bytes32)"(
       role?: BytesLike | null,
       previousAdminRole?: BytesLike | null,
@@ -600,6 +723,25 @@ export interface VTS extends BaseContract {
       sender?: string | null,
     ): RoleRevokedEventFilter;
     RoleRevoked(role?: BytesLike | null, account?: string | null, sender?: string | null): RoleRevokedEventFilter;
+
+    "Voted(uint256,uint256,uint256)"(_organizationId?: null, _hackathonId?: null, _projectId?: null): VotedEventFilter;
+    Voted(_organizationId?: null, _hackathonId?: null, _projectId?: null): VotedEventFilter;
+
+    "VotedByDelegate(uint256,uint256,uint256,address)"(
+      _organizationId?: null,
+      _hackathonId?: null,
+      _projectId?: null,
+      _ownerOfTokens?: null,
+    ): VotedByDelegateEventFilter;
+    VotedByDelegate(
+      _organizationId?: null,
+      _hackathonId?: null,
+      _projectId?: null,
+      _ownerOfTokens?: null,
+    ): VotedByDelegateEventFilter;
+
+    "VoterAdded(address,uint256,uint256)"(_voter?: null, _organizationId?: null, _amount?: null): VoterAddedEventFilter;
+    VoterAdded(_voter?: null, _organizationId?: null, _amount?: null): VoterAddedEventFilter;
   };
 
   estimateGas: {
@@ -640,6 +782,8 @@ export interface VTS extends BaseContract {
       _amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> },
     ): Promise<BigNumber>;
+
+    calculateWinners(_hackathonId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     executeReward(
       _hackathonId: BigNumberish,
@@ -743,6 +887,8 @@ export interface VTS extends BaseContract {
       _amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> },
     ): Promise<PopulatedTransaction>;
+
+    calculateWinners(_hackathonId: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     executeReward(
       _hackathonId: BigNumberish,

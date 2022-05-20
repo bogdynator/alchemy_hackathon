@@ -8,7 +8,7 @@ import { userInfo } from "os";
 import { VotingSystem, VotingSystem__factory } from "../typechain";
 import { Token__factory } from "../typechain";
 
-describe("Test Voting System", async () => {
+xdescribe("Test Voting System", async () => {
   let VotingFactory: any;
   let Voting: any;
   let TokenFactory: any;
