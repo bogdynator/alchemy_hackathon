@@ -68,6 +68,8 @@ contract VTS is AccessControl {
 
     event VotedByDelegate(uint256 _organizationId, uint256 _hackathonId, uint256 _projectId, address _ownerOfTokens);
 
+    event Winner(uint256 _hackathonId);
+
     constructor() {}
 
     function addOrganization(
@@ -164,6 +166,8 @@ contract VTS is AccessControl {
 
         numberOfProjectsPerHack[_hackathonId] += 1;
 
+        console.log("Number of projects: ", numberOfProjectsPerHack[_hackathonId]);
+
         emit ProjectAdded(_hackathonId, _name, _url);
     }
 
@@ -207,22 +211,28 @@ contract VTS is AccessControl {
         voted[_projectId][_ownerOfTokens] = _projectId;
     }
 
-    function calculateWinners(uint256 _hackathonId)
-        external
-        view
-        adminRequired(_hackathonId)
-        returns (uint256[] memory)
-    {
+    function calculateWinners(uint256 _hackathonId) public adminRequired(_hackathonId) returns (uint256[] memory) {
         require(_hackathonId > 0, "Hackathon must exists.");
         uint256 winnerVotes;
         uint256[] memory indexOfWinner = new uint256[](numberOfProjectsPerHack[_hackathonId]);
         for (uint256 i = 0; i < numberOfProjectsPerHack[_hackathonId]; i++) {
-            if (winnerVotes < projects[_hackathonId][i].votes) {
+            if (winnerVotes <= projects[_hackathonId][i].votes) {
                 winnerVotes = projects[_hackathonId][i].votes;
                 indexOfWinner[i] = i;
             }
         }
+
+        emit Winner(_hackathonId);
         return indexOfWinner;
+    }
+
+    function printWinner(uint256 _hackathonId) external adminRequired(_hackathonId) {
+        require(_hackathonId > 0, "Hackathon must exists.");
+        uint256[] memory indexOfWinner = calculateWinners(_hackathonId);
+        console.log("====WINNNERS====");
+        for (uint256 i = 0; i < indexOfWinner.length; i++) {
+            console.log("Project: ", projects[_hackathonId][i + 1].name);
+        }
     }
 
     function executeReward(uint256 _hackathonId, address[] calldata winners) external adminRequired(_hackathonId) {

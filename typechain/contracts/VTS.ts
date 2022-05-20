@@ -36,6 +36,7 @@ export interface VTSInterface extends utils.Interface {
     "hasRole(bytes32,address)": FunctionFragment;
     "organizationIdCounter()": FunctionFragment;
     "organizations(uint256)": FunctionFragment;
+    "printWinner(uint256)": FunctionFragment;
     "projects(uint256,uint256)": FunctionFragment;
     "projectsIdCounter()": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
@@ -64,6 +65,7 @@ export interface VTSInterface extends utils.Interface {
       | "hasRole"
       | "organizationIdCounter"
       | "organizations"
+      | "printWinner"
       | "projects"
       | "projectsIdCounter"
       | "renounceRole"
@@ -93,6 +95,7 @@ export interface VTSInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "hasRole", values: [BytesLike, string]): string;
   encodeFunctionData(functionFragment: "organizationIdCounter", values?: undefined): string;
   encodeFunctionData(functionFragment: "organizations", values: [BigNumberish]): string;
+  encodeFunctionData(functionFragment: "printWinner", values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: "projects", values: [BigNumberish, BigNumberish]): string;
   encodeFunctionData(functionFragment: "projectsIdCounter", values?: undefined): string;
   encodeFunctionData(functionFragment: "renounceRole", values: [BytesLike, string]): string;
@@ -121,6 +124,7 @@ export interface VTSInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "organizationIdCounter", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "organizations", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "printWinner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "projects", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "projectsIdCounter", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "renounceRole", data: BytesLike): Result;
@@ -142,6 +146,7 @@ export interface VTSInterface extends utils.Interface {
     "Voted(uint256,uint256,uint256)": EventFragment;
     "VotedByDelegate(uint256,uint256,uint256,address)": EventFragment;
     "VoterAdded(address,uint256,uint256)": EventFragment;
+    "Winner(uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "HackathonAdded"): EventFragment;
@@ -153,6 +158,7 @@ export interface VTSInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "Voted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "VotedByDelegate"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "VoterAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Winner"): EventFragment;
 }
 
 export interface HackathonAddedEventObject {
@@ -246,6 +252,13 @@ export type VoterAddedEvent = TypedEvent<[string, BigNumber, BigNumber], VoterAd
 
 export type VoterAddedEventFilter = TypedEventFilter<VoterAddedEvent>;
 
+export interface WinnerEventObject {
+  _hackathonId: BigNumber;
+}
+export type WinnerEvent = TypedEvent<[BigNumber], WinnerEventObject>;
+
+export type WinnerEventFilter = TypedEventFilter<WinnerEvent>;
+
 export interface VTS extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
@@ -307,7 +320,10 @@ export interface VTS extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> },
     ): Promise<ContractTransaction>;
 
-    calculateWinners(_hackathonId: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber[]]>;
+    calculateWinners(
+      _hackathonId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> },
+    ): Promise<ContractTransaction>;
 
     executeReward(
       _hackathonId: BigNumberish,
@@ -354,6 +370,11 @@ export interface VTS extends BaseContract {
         token: string;
       }
     >;
+
+    printWinner(
+      _hackathonId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> },
+    ): Promise<ContractTransaction>;
 
     projects(
       arg0: BigNumberish,
@@ -443,7 +464,10 @@ export interface VTS extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> },
   ): Promise<ContractTransaction>;
 
-  calculateWinners(_hackathonId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber[]>;
+  calculateWinners(
+    _hackathonId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> },
+  ): Promise<ContractTransaction>;
 
   executeReward(
     _hackathonId: BigNumberish,
@@ -490,6 +514,11 @@ export interface VTS extends BaseContract {
       token: string;
     }
   >;
+
+  printWinner(
+    _hackathonId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> },
+  ): Promise<ContractTransaction>;
 
   projects(
     arg0: BigNumberish,
@@ -619,6 +648,8 @@ export interface VTS extends BaseContract {
       }
     >;
 
+    printWinner(_hackathonId: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
     projects(
       arg0: BigNumberish,
       arg1: BigNumberish,
@@ -742,6 +773,9 @@ export interface VTS extends BaseContract {
 
     "VoterAdded(address,uint256,uint256)"(_voter?: null, _organizationId?: null, _amount?: null): VoterAddedEventFilter;
     VoterAdded(_voter?: null, _organizationId?: null, _amount?: null): VoterAddedEventFilter;
+
+    "Winner(uint256)"(_hackathonId?: null): WinnerEventFilter;
+    Winner(_hackathonId?: null): WinnerEventFilter;
   };
 
   estimateGas: {
@@ -783,7 +817,10 @@ export interface VTS extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> },
     ): Promise<BigNumber>;
 
-    calculateWinners(_hackathonId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+    calculateWinners(
+      _hackathonId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> },
+    ): Promise<BigNumber>;
 
     executeReward(
       _hackathonId: BigNumberish,
@@ -808,6 +845,11 @@ export interface VTS extends BaseContract {
     organizationIdCounter(overrides?: CallOverrides): Promise<BigNumber>;
 
     organizations(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+
+    printWinner(
+      _hackathonId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> },
+    ): Promise<BigNumber>;
 
     projects(arg0: BigNumberish, arg1: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -888,7 +930,10 @@ export interface VTS extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> },
     ): Promise<PopulatedTransaction>;
 
-    calculateWinners(_hackathonId: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    calculateWinners(
+      _hackathonId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> },
+    ): Promise<PopulatedTransaction>;
 
     executeReward(
       _hackathonId: BigNumberish,
@@ -913,6 +958,11 @@ export interface VTS extends BaseContract {
     organizationIdCounter(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     organizations(arg0: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    printWinner(
+      _hackathonId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> },
+    ): Promise<PopulatedTransaction>;
 
     projects(arg0: BigNumberish, arg1: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
