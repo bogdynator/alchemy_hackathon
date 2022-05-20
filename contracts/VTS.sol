@@ -3,6 +3,7 @@ pragma solidity ^0.8.14;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "hardhat/console.sol";
 
 import "./TokenVote.sol";
 
@@ -97,8 +98,8 @@ contract VTS is AccessControl {
         uint256 _voteStartDate,
         uint256 _voteEndDate
     ) external adminRequired(_organizationId) {
-        organizationIdCounter.increment();
-        uint256 currentTokenId = organizationIdCounter.current();
+        hackathonsIdCounter.increment();
+        uint256 currentTokenId = hackathonsIdCounter.current();
 
         // here we should add input validation on dates
         hackathons[currentTokenId] = Hackathon(
@@ -130,6 +131,9 @@ contract VTS is AccessControl {
         uint256 _hackathonId,
         uint256 _projectId
     ) external {
+        console.log(block.timestamp);
+        console.log(hackathons[_hackathonId].voteEnd);
+        console.log(hackathons[_hackathonId].reward);
         require(hackathons[_hackathonId].voteEnd > block.timestamp, "Voting is complete");
         uint256 nrOfVotes = organizations[_organizationId].token.getVotes(msg.sender);
         uint256 nrOfTokens = organizations[_organizationId].token.balanceOf(msg.sender);
