@@ -20,23 +20,45 @@ import type {
 
 import type { OnEvent, TypedEvent, TypedEventFilter, TypedListener } from "../common";
 
+export type HackathonStruct = {
+  name: string;
+  description: string;
+  startDate: BigNumberish;
+  endDate: BigNumberish;
+  reward: BigNumberish;
+  winners: BigNumberish[];
+  projectsNr: BigNumberish;
+};
+
+export type HackathonStructOutput = [string, string, BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber] & {
+  name: string;
+  description: string;
+  startDate: BigNumber;
+  endDate: BigNumber;
+  reward: BigNumber;
+  winners: BigNumber[];
+  projectsNr: BigNumber;
+};
+
 export interface VTSInterface extends utils.Interface {
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "addHackathon(uint256,string,string,uint256,uint256,uint256,uint256,uint256)": FunctionFragment;
+    "addHackathon(uint256,string,string,uint256,uint256,uint256)": FunctionFragment;
     "addOrganization(string,string,string,string,address[])": FunctionFragment;
-    "addProject(uint256,address[],string,string)": FunctionFragment;
+    "addProject(uint256,uint256,address,address[],string,string)": FunctionFragment;
     "addVoter(address,uint256,uint256)": FunctionFragment;
-    "executeReward(uint256,address[])": FunctionFragment;
+    "executeReward(uint256,uint256)": FunctionFragment;
+    "getHackathon(uint256,uint256)": FunctionFragment;
+    "getOrganizationHackathons(uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
-    "hackathons(uint256)": FunctionFragment;
-    "hackathonsIdCounter()": FunctionFragment;
+    "hackathons(uint256,uint256)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
+    "organizationAdmins(uint256,uint256)": FunctionFragment;
     "organizationIdCounter()": FunctionFragment;
     "organizations(uint256)": FunctionFragment;
+    "organizationsId(uint256)": FunctionFragment;
     "projects(uint256,uint256)": FunctionFragment;
-    "projectsIdCounter()": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
     "rewards(address)": FunctionFragment;
@@ -55,15 +77,17 @@ export interface VTSInterface extends utils.Interface {
       | "addProject"
       | "addVoter"
       | "executeReward"
+      | "getHackathon"
+      | "getOrganizationHackathons"
       | "getRoleAdmin"
       | "grantRole"
       | "hackathons"
-      | "hackathonsIdCounter"
       | "hasRole"
+      | "organizationAdmins"
       | "organizationIdCounter"
       | "organizations"
+      | "organizationsId"
       | "projects"
-      | "projectsIdCounter"
       | "renounceRole"
       | "revokeRole"
       | "rewards"
@@ -77,21 +101,26 @@ export interface VTSInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "DEFAULT_ADMIN_ROLE", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "addHackathon",
-    values: [BigNumberish, string, string, BigNumberish, BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+    values: [BigNumberish, string, string, BigNumberish, BigNumberish, BigNumberish],
   ): string;
   encodeFunctionData(functionFragment: "addOrganization", values: [string, string, string, string, string[]]): string;
-  encodeFunctionData(functionFragment: "addProject", values: [BigNumberish, string[], string, string]): string;
+  encodeFunctionData(
+    functionFragment: "addProject",
+    values: [BigNumberish, BigNumberish, string, string[], string, string],
+  ): string;
   encodeFunctionData(functionFragment: "addVoter", values: [string, BigNumberish, BigNumberish]): string;
-  encodeFunctionData(functionFragment: "executeReward", values: [BigNumberish, string[]]): string;
+  encodeFunctionData(functionFragment: "executeReward", values: [BigNumberish, BigNumberish]): string;
+  encodeFunctionData(functionFragment: "getHackathon", values: [BigNumberish, BigNumberish]): string;
+  encodeFunctionData(functionFragment: "getOrganizationHackathons", values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: "getRoleAdmin", values: [BytesLike]): string;
   encodeFunctionData(functionFragment: "grantRole", values: [BytesLike, string]): string;
-  encodeFunctionData(functionFragment: "hackathons", values: [BigNumberish]): string;
-  encodeFunctionData(functionFragment: "hackathonsIdCounter", values?: undefined): string;
+  encodeFunctionData(functionFragment: "hackathons", values: [BigNumberish, BigNumberish]): string;
   encodeFunctionData(functionFragment: "hasRole", values: [BytesLike, string]): string;
+  encodeFunctionData(functionFragment: "organizationAdmins", values: [BigNumberish, BigNumberish]): string;
   encodeFunctionData(functionFragment: "organizationIdCounter", values?: undefined): string;
   encodeFunctionData(functionFragment: "organizations", values: [BigNumberish]): string;
+  encodeFunctionData(functionFragment: "organizationsId", values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: "projects", values: [BigNumberish, BigNumberish]): string;
-  encodeFunctionData(functionFragment: "projectsIdCounter", values?: undefined): string;
   encodeFunctionData(functionFragment: "renounceRole", values: [BytesLike, string]): string;
   encodeFunctionData(functionFragment: "revokeRole", values: [BytesLike, string]): string;
   encodeFunctionData(functionFragment: "rewards", values: [string]): string;
@@ -110,15 +139,17 @@ export interface VTSInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "addProject", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "addVoter", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "executeReward", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "getHackathon", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "getOrganizationHackathons", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getRoleAdmin", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "hackathons", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "hackathonsIdCounter", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "organizationAdmins", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "organizationIdCounter", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "organizations", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "organizationsId", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "projects", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "projectsIdCounter", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "renounceRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "rewards", data: BytesLike): Result;
@@ -132,12 +163,13 @@ export interface VTSInterface extends utils.Interface {
     "AddAdminOrganization()": EventFragment;
     "AddHackathon()": EventFragment;
     "AddOrganization()": EventFragment;
-    "AddProject()": EventFragment;
+    "AddProject(string,address[],uint256)": EventFragment;
     "AddVoter(uint256,address,uint256)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
     "RoleRevoked(bytes32,address,address)": EventFragment;
     "Vote()": EventFragment;
+    "Winner(uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "AddAdminOrganization"): EventFragment;
@@ -149,6 +181,7 @@ export interface VTSInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Vote"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Winner"): EventFragment;
 }
 
 export interface AddAdminOrganizationEventObject {}
@@ -166,8 +199,12 @@ export type AddOrganizationEvent = TypedEvent<[], AddOrganizationEventObject>;
 
 export type AddOrganizationEventFilter = TypedEventFilter<AddOrganizationEvent>;
 
-export interface AddProjectEventObject {}
-export type AddProjectEvent = TypedEvent<[], AddProjectEventObject>;
+export interface AddProjectEventObject {
+  name: string;
+  contributors: string[];
+  projectNumber: BigNumber;
+}
+export type AddProjectEvent = TypedEvent<[string, string[], BigNumber], AddProjectEventObject>;
 
 export type AddProjectEventFilter = TypedEventFilter<AddProjectEvent>;
 
@@ -212,6 +249,13 @@ export type VoteEvent = TypedEvent<[], VoteEventObject>;
 
 export type VoteEventFilter = TypedEventFilter<VoteEvent>;
 
+export interface WinnerEventObject {
+  _hackathonId: BigNumber;
+}
+export type WinnerEvent = TypedEvent<[BigNumber], WinnerEventObject>;
+
+export type WinnerEventFilter = TypedEventFilter<WinnerEvent>;
+
 export interface VTS extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
@@ -244,8 +288,6 @@ export interface VTS extends BaseContract {
       _startDate: BigNumberish,
       _endDate: BigNumberish,
       _reward: BigNumberish,
-      _voteStartDate: BigNumberish,
-      _voteEndDate: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> },
     ): Promise<ContractTransaction>;
 
@@ -259,7 +301,9 @@ export interface VTS extends BaseContract {
     ): Promise<ContractTransaction>;
 
     addProject(
+      _organizationId: BigNumberish,
       _hackathonId: BigNumberish,
+      _projectAddress: string,
       contributors: string[],
       _name: string,
       _url: string,
@@ -275,9 +319,20 @@ export interface VTS extends BaseContract {
 
     executeReward(
       _hackathonId: BigNumberish,
-      winners: string[],
+      _organizationId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> },
     ): Promise<ContractTransaction>;
+
+    getHackathon(
+      _hackathonId: BigNumberish,
+      _organizationId: BigNumberish,
+      overrides?: CallOverrides,
+    ): Promise<[HackathonStructOutput]>;
+
+    getOrganizationHackathons(
+      _organizationId: BigNumberish,
+      overrides?: CallOverrides,
+    ): Promise<[HackathonStructOutput[]]>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>;
 
@@ -289,22 +344,22 @@ export interface VTS extends BaseContract {
 
     hackathons(
       arg0: BigNumberish,
+      arg1: BigNumberish,
       overrides?: CallOverrides,
     ): Promise<
-      [string, string, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+      [string, string, BigNumber, BigNumber, BigNumber, BigNumber] & {
         name: string;
         description: string;
         startDate: BigNumber;
         endDate: BigNumber;
         reward: BigNumber;
-        voteStart: BigNumber;
-        voteEnd: BigNumber;
+        projectsNr: BigNumber;
       }
     >;
 
-    hackathonsIdCounter(overrides?: CallOverrides): Promise<[BigNumber] & { _value: BigNumber }>;
-
     hasRole(role: BytesLike, account: string, overrides?: CallOverrides): Promise<[boolean]>;
+
+    organizationAdmins(arg0: BigNumberish, arg1: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
 
     organizationIdCounter(overrides?: CallOverrides): Promise<[BigNumber] & { _value: BigNumber }>;
 
@@ -312,26 +367,28 @@ export interface VTS extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides,
     ): Promise<
-      [string, string, string] & {
+      [string, string, string, BigNumber] & {
         name: string;
         description: string;
         token: string;
+        hackathonNr: BigNumber;
       }
     >;
+
+    organizationsId(arg0: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     projects(
       arg0: BigNumberish,
       arg1: BigNumberish,
       overrides?: CallOverrides,
     ): Promise<
-      [string, string, BigNumber] & {
+      [string, string, string, BigNumber] & {
         name: string;
         url: string;
+        projectAddress: string;
         votes: BigNumber;
       }
     >;
-
-    projectsIdCounter(overrides?: CallOverrides): Promise<[BigNumber] & { _value: BigNumber }>;
 
     renounceRole(
       role: BytesLike,
@@ -378,8 +435,6 @@ export interface VTS extends BaseContract {
     _startDate: BigNumberish,
     _endDate: BigNumberish,
     _reward: BigNumberish,
-    _voteStartDate: BigNumberish,
-    _voteEndDate: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> },
   ): Promise<ContractTransaction>;
 
@@ -393,7 +448,9 @@ export interface VTS extends BaseContract {
   ): Promise<ContractTransaction>;
 
   addProject(
+    _organizationId: BigNumberish,
     _hackathonId: BigNumberish,
+    _projectAddress: string,
     contributors: string[],
     _name: string,
     _url: string,
@@ -409,9 +466,17 @@ export interface VTS extends BaseContract {
 
   executeReward(
     _hackathonId: BigNumberish,
-    winners: string[],
+    _organizationId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> },
   ): Promise<ContractTransaction>;
+
+  getHackathon(
+    _hackathonId: BigNumberish,
+    _organizationId: BigNumberish,
+    overrides?: CallOverrides,
+  ): Promise<HackathonStructOutput>;
+
+  getOrganizationHackathons(_organizationId: BigNumberish, overrides?: CallOverrides): Promise<HackathonStructOutput[]>;
 
   getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
@@ -423,22 +488,22 @@ export interface VTS extends BaseContract {
 
   hackathons(
     arg0: BigNumberish,
+    arg1: BigNumberish,
     overrides?: CallOverrides,
   ): Promise<
-    [string, string, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+    [string, string, BigNumber, BigNumber, BigNumber, BigNumber] & {
       name: string;
       description: string;
       startDate: BigNumber;
       endDate: BigNumber;
       reward: BigNumber;
-      voteStart: BigNumber;
-      voteEnd: BigNumber;
+      projectsNr: BigNumber;
     }
   >;
 
-  hackathonsIdCounter(overrides?: CallOverrides): Promise<BigNumber>;
-
   hasRole(role: BytesLike, account: string, overrides?: CallOverrides): Promise<boolean>;
+
+  organizationAdmins(arg0: BigNumberish, arg1: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   organizationIdCounter(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -446,26 +511,28 @@ export interface VTS extends BaseContract {
     arg0: BigNumberish,
     overrides?: CallOverrides,
   ): Promise<
-    [string, string, string] & {
+    [string, string, string, BigNumber] & {
       name: string;
       description: string;
       token: string;
+      hackathonNr: BigNumber;
     }
   >;
+
+  organizationsId(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
   projects(
     arg0: BigNumberish,
     arg1: BigNumberish,
     overrides?: CallOverrides,
   ): Promise<
-    [string, string, BigNumber] & {
+    [string, string, string, BigNumber] & {
       name: string;
       url: string;
+      projectAddress: string;
       votes: BigNumber;
     }
   >;
-
-  projectsIdCounter(overrides?: CallOverrides): Promise<BigNumber>;
 
   renounceRole(
     role: BytesLike,
@@ -512,8 +579,6 @@ export interface VTS extends BaseContract {
       _startDate: BigNumberish,
       _endDate: BigNumberish,
       _reward: BigNumberish,
-      _voteStartDate: BigNumberish,
-      _voteEndDate: BigNumberish,
       overrides?: CallOverrides,
     ): Promise<void>;
 
@@ -527,7 +592,9 @@ export interface VTS extends BaseContract {
     ): Promise<void>;
 
     addProject(
+      _organizationId: BigNumberish,
       _hackathonId: BigNumberish,
+      _projectAddress: string,
       contributors: string[],
       _name: string,
       _url: string,
@@ -541,7 +608,18 @@ export interface VTS extends BaseContract {
       overrides?: CallOverrides,
     ): Promise<void>;
 
-    executeReward(_hackathonId: BigNumberish, winners: string[], overrides?: CallOverrides): Promise<void>;
+    executeReward(_hackathonId: BigNumberish, _organizationId: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
+    getHackathon(
+      _hackathonId: BigNumberish,
+      _organizationId: BigNumberish,
+      overrides?: CallOverrides,
+    ): Promise<HackathonStructOutput>;
+
+    getOrganizationHackathons(
+      _organizationId: BigNumberish,
+      overrides?: CallOverrides,
+    ): Promise<HackathonStructOutput[]>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
@@ -549,22 +627,22 @@ export interface VTS extends BaseContract {
 
     hackathons(
       arg0: BigNumberish,
+      arg1: BigNumberish,
       overrides?: CallOverrides,
     ): Promise<
-      [string, string, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+      [string, string, BigNumber, BigNumber, BigNumber, BigNumber] & {
         name: string;
         description: string;
         startDate: BigNumber;
         endDate: BigNumber;
         reward: BigNumber;
-        voteStart: BigNumber;
-        voteEnd: BigNumber;
+        projectsNr: BigNumber;
       }
     >;
 
-    hackathonsIdCounter(overrides?: CallOverrides): Promise<BigNumber>;
-
     hasRole(role: BytesLike, account: string, overrides?: CallOverrides): Promise<boolean>;
+
+    organizationAdmins(arg0: BigNumberish, arg1: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
     organizationIdCounter(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -572,26 +650,28 @@ export interface VTS extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides,
     ): Promise<
-      [string, string, string] & {
+      [string, string, string, BigNumber] & {
         name: string;
         description: string;
         token: string;
+        hackathonNr: BigNumber;
       }
     >;
+
+    organizationsId(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     projects(
       arg0: BigNumberish,
       arg1: BigNumberish,
       overrides?: CallOverrides,
     ): Promise<
-      [string, string, BigNumber] & {
+      [string, string, string, BigNumber] & {
         name: string;
         url: string;
+        projectAddress: string;
         votes: BigNumber;
       }
     >;
-
-    projectsIdCounter(overrides?: CallOverrides): Promise<BigNumber>;
 
     renounceRole(role: BytesLike, account: string, overrides?: CallOverrides): Promise<void>;
 
@@ -631,8 +711,12 @@ export interface VTS extends BaseContract {
     "AddOrganization()"(): AddOrganizationEventFilter;
     AddOrganization(): AddOrganizationEventFilter;
 
-    "AddProject()"(): AddProjectEventFilter;
-    AddProject(): AddProjectEventFilter;
+    "AddProject(string,address[],uint256)"(
+      name?: null,
+      contributors?: null,
+      projectNumber?: null,
+    ): AddProjectEventFilter;
+    AddProject(name?: null, contributors?: null, projectNumber?: null): AddProjectEventFilter;
 
     "AddVoter(uint256,address,uint256)"(organizatonId?: null, voter?: null, amount?: null): AddVoterEventFilter;
     AddVoter(organizatonId?: null, voter?: null, amount?: null): AddVoterEventFilter;
@@ -664,6 +748,9 @@ export interface VTS extends BaseContract {
 
     "Vote()"(): VoteEventFilter;
     Vote(): VoteEventFilter;
+
+    "Winner(uint256)"(_hackathonId?: null): WinnerEventFilter;
+    Winner(_hackathonId?: null): WinnerEventFilter;
   };
 
   estimateGas: {
@@ -676,8 +763,6 @@ export interface VTS extends BaseContract {
       _startDate: BigNumberish,
       _endDate: BigNumberish,
       _reward: BigNumberish,
-      _voteStartDate: BigNumberish,
-      _voteEndDate: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> },
     ): Promise<BigNumber>;
 
@@ -691,7 +776,9 @@ export interface VTS extends BaseContract {
     ): Promise<BigNumber>;
 
     addProject(
+      _organizationId: BigNumberish,
       _hackathonId: BigNumberish,
+      _projectAddress: string,
       contributors: string[],
       _name: string,
       _url: string,
@@ -707,9 +794,17 @@ export interface VTS extends BaseContract {
 
     executeReward(
       _hackathonId: BigNumberish,
-      winners: string[],
+      _organizationId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> },
     ): Promise<BigNumber>;
+
+    getHackathon(
+      _hackathonId: BigNumberish,
+      _organizationId: BigNumberish,
+      overrides?: CallOverrides,
+    ): Promise<BigNumber>;
+
+    getOrganizationHackathons(_organizationId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -719,19 +814,19 @@ export interface VTS extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> },
     ): Promise<BigNumber>;
 
-    hackathons(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
-
-    hackathonsIdCounter(overrides?: CallOverrides): Promise<BigNumber>;
+    hackathons(arg0: BigNumberish, arg1: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     hasRole(role: BytesLike, account: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    organizationAdmins(arg0: BigNumberish, arg1: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     organizationIdCounter(overrides?: CallOverrides): Promise<BigNumber>;
 
     organizations(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-    projects(arg0: BigNumberish, arg1: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+    organizationsId(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-    projectsIdCounter(overrides?: CallOverrides): Promise<BigNumber>;
+    projects(arg0: BigNumberish, arg1: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     renounceRole(
       role: BytesLike,
@@ -779,8 +874,6 @@ export interface VTS extends BaseContract {
       _startDate: BigNumberish,
       _endDate: BigNumberish,
       _reward: BigNumberish,
-      _voteStartDate: BigNumberish,
-      _voteEndDate: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> },
     ): Promise<PopulatedTransaction>;
 
@@ -794,7 +887,9 @@ export interface VTS extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     addProject(
+      _organizationId: BigNumberish,
       _hackathonId: BigNumberish,
+      _projectAddress: string,
       contributors: string[],
       _name: string,
       _url: string,
@@ -810,9 +905,17 @@ export interface VTS extends BaseContract {
 
     executeReward(
       _hackathonId: BigNumberish,
-      winners: string[],
+      _organizationId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> },
     ): Promise<PopulatedTransaction>;
+
+    getHackathon(
+      _hackathonId: BigNumberish,
+      _organizationId: BigNumberish,
+      overrides?: CallOverrides,
+    ): Promise<PopulatedTransaction>;
+
+    getOrganizationHackathons(_organizationId: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -822,19 +925,23 @@ export interface VTS extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> },
     ): Promise<PopulatedTransaction>;
 
-    hackathons(arg0: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    hackathonsIdCounter(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    hackathons(arg0: BigNumberish, arg1: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     hasRole(role: BytesLike, account: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    organizationAdmins(
+      arg0: BigNumberish,
+      arg1: BigNumberish,
+      overrides?: CallOverrides,
+    ): Promise<PopulatedTransaction>;
 
     organizationIdCounter(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     organizations(arg0: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    projects(arg0: BigNumberish, arg1: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    organizationsId(arg0: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    projectsIdCounter(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    projects(arg0: BigNumberish, arg1: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     renounceRole(
       role: BytesLike,

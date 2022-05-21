@@ -5,9 +5,8 @@ import "./TokenVote.sol";
 struct Organization {
     string name;
     string description;
-    address[] admins;
-    uint256[] hackathons;
     TokenVote token;
+    uint256 hackathonNr;
 }
 
 struct Hackathon {
@@ -16,13 +15,14 @@ struct Hackathon {
     uint256 startDate;
     uint256 endDate;
     uint256 reward;
-    uint256 voteStart;
-    uint256 voteEnd;
+    uint256[] winners;
+    uint256 projectsNr;
 }
 
 struct Project {
     string name;
     string url;
+    address projectAddress;
     address[] contributors;
     uint256 votes;
 }

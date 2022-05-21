@@ -48,10 +48,7 @@ describe("Test Voting System", async () => {
     Token = (await ethers.getContractAt("TokenVote", org.token)) as TokenVote;
     expect(await Token.name()).to.be.equal("tokenOrg");
 
-    await expect(Voting.addHackathon(1, "hack", "desc", 1653033263, 1659646800, 1000, 1653033263, 1659646800)).to.emit(
-      Voting,
-      "AddHackathon",
-    );
+    await expect(Voting.addHackathon(1, "hack", "desc", 1653033263, 1659646800, 1000)).to.emit(Voting, "AddHackathon");
   });
 
   it("add project", async () => {
@@ -63,14 +60,29 @@ describe("Test Voting System", async () => {
     Token = (await ethers.getContractAt("TokenVote", org.token)) as TokenVote;
     expect(await Token.name()).to.be.equal("tokenOrg");
 
-    await expect(Voting.addHackathon(1, "hack", "desc", 1653033263, 1659646800, 1000, 1653033263, 1659646800)).to.emit(
-      Voting,
-      "AddHackathon",
-    );
-    await expect(Voting.addProject(1, [user.address], "Proj1", "https://currentmillis.com/")).to.emit(
+    await expect(Voting.addHackathon(1, "hack", "desc", 1653033263, 1659646800, 1000)).to.emit(Voting, "AddHackathon");
+    await expect(Voting.addProject(1, 1, bob.address, [user.address], "Proj1", "https://currentmillis.com/")).to.emit(
       Voting,
       "AddProject",
     );
+  });
+
+  it("add 2 projects", async () => {
+    await expect(
+      Voting.addOrganization("org1", "description1", "tokenOrg", "TORG1", [user.address, bob.address]),
+    ).to.emit(Voting, "AddOrganization");
+    let org = await Voting.organizations(1);
+
+    Token = (await ethers.getContractAt("TokenVote", org.token)) as TokenVote;
+    expect(await Token.name()).to.be.equal("tokenOrg");
+
+    await expect(Voting.addHackathon(1, "hack", "desc", 1653033263, 1659646800, 1000)).to.emit(Voting, "AddHackathon");
+    await expect(Voting.addProject(1, 1, bob.address, [user.address], "Proj1", "https://currentmillis.com/"))
+      .to.emit(Voting, "AddProject")
+      .withArgs("Proj1", [user.address], 1);
+    await expect(Voting.addProject(1, 1, bob.address, [user.address], "Proj2", "https://currentmillis.com/"))
+      .to.emit(Voting, "AddProject")
+      .withArgs("Proj2", [user.address], 2);
   });
 
   it("add voter", async () => {
@@ -95,8 +107,8 @@ describe("Test Voting System", async () => {
 
     Token = (await ethers.getContractAt("TokenVote", org.token)) as TokenVote;
     console.log(await Token.name());
-    await Voting.addHackathon(1, "hack", "desc", 1653033263, 1659646800, 1000, 1653033263, 1659646800);
-    await Voting.addProject(1, [user.address], "Proj1", "https://currentmillis.com/");
+    await Voting.addHackathon(1, "hack", "desc", 1653033263, 1659646800, 1000);
+    await Voting.addProject(1, 1, bob.address, [user.address], "Proj1", "https://currentmillis.com/");
     await expect(Voting.addVoter(user.address, 1, 1000))
       .to.emit(Token, "Transfer")
       .withArgs(ethers.constants.AddressZero, user.address, 1000);
@@ -108,5 +120,43 @@ describe("Test Voting System", async () => {
 
     await expect(Voting.connect(user).vote(1, 1, 1)).to.emit(Voting, "Vote");
     expect(await Voting.voted("1", user.address)).to.be.equal(1);
+  });
+
+  it("add more Hackathons to an organization", async () => {
+    await expect(
+      Voting.addOrganization("org1", "description1", "tokenOrg", "TORG1", [user.address, bob.address]),
+    ).to.emit(Voting, "AddOrganization");
+    await expect(
+      Voting.addOrganization("org2", "description2", "tokenOrg2", "TORG2", [user.address, bob.address]),
+    ).to.emit(Voting, "AddOrganization");
+
+    let org = await Voting.organizations(1);
+    let org2 = await Voting.organizations(2);
+
+    Token = (await ethers.getContractAt("TokenVote", org.token)) as TokenVote;
+    expect(await Token.name()).to.be.equal("tokenOrg");
+    Token = (await ethers.getContractAt("TokenVote", org2.token)) as TokenVote;
+    expect(await Token.name()).to.be.equal("tokenOrg2");
+
+    await expect(Voting.addHackathon(1, "hack", "desc", 1653033263, 1659646800, 1000)).to.emit(Voting, "AddHackathon");
+    await expect(Voting.addHackathon(1, "hack2", "desc2", 1653033263, 1659646800, 1000)).to.emit(
+      Voting,
+      "AddHackathon",
+    );
+    await expect(Voting.addHackathon(1, "hack3", "desc3", 1653033263, 1659646800, 1000)).to.emit(
+      Voting,
+      "AddHackathon",
+    );
+    await expect(Voting.addHackathon(2, "hack2", "desc2", 1653033263, 1659646800, 1000)).to.emit(
+      Voting,
+      "AddHackathon",
+    );
+    await expect(Voting.addHackathon(2, "hack3", "desc3", 1653033263, 1659646800, 1000)).to.emit(
+      Voting,
+      "AddHackathon",
+    );
+
+    console.log(await Voting.getOrganizationHackathons(1));
+    console.log(await Voting.getOrganizationHackathons(2));
   });
 });
